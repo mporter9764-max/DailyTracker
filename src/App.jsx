@@ -277,6 +277,15 @@ function LogTab({ profile, onSaveDay }) {
         </div>
       </Card>
 
+      {/* Alcohol */}
+      <Card style={{ marginBottom: 12 }}>
+        <SectionLabel>Alcohol (optional)</SectionLabel>
+        <div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Number of drinks</div>
+          <input type="number" value={dayData.alcohol || ''} onChange={e => setDayData({ ...dayData, alcohol: e.target.value })} placeholder="e.g. 2" style={{ width: '100%', maxWidth: 160 }} />
+        </div>
+      </Card>
+
       {/* Weight */}
       <Card style={{ marginBottom: 16 }}>
         <SectionLabel>Weight (optional)</SectionLabel>
