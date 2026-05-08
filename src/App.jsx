@@ -79,6 +79,7 @@ function Spinner() {
 
 // ── Log Tab ───────────────────────────────────────────────────────────────────
 // ── Log Tab ───────────────────────────────────────────────────────────────────
+// ── Log Tab ───────────────────────────────────────────────────────────────────
 function LogTab({ profile, onSaveDay }) {
   const [currentDate, setCurrentDate] = useState(todayStr())
   const [dayData, setDayData] = useState(null)
@@ -265,8 +266,53 @@ function LogTab({ profile, onSaveDay }) {
       </Card>
 
       {/* Exercise */}
-      <Card style={{ ma
+      <Card style={{ marginBottom: 12 }}>
+        <SectionLabel>Exercise & calories burned</SectionLabel>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 90px 28px', gap: 6, marginBottom: 6 }}>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Activity</div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Hours</div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Cal burned</div>
+          <div />
+        </div>
+        {dayData.exercise.map((row, idx) => (
+          <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr 80px 90px 28px', gap: 6, marginBottom: 6 }}>
+            <select value={row.activity} onChange={e => updateExercise(idx, 'activity', e.target.value)}>
+              {ACTIVITIES.map(a => <option key={a.label} value={a.label}>{a.label}</option>)}
+            </select>
+            <input type="number" value={row.duration} onChange={e => updateExercise(idx, 'duration', e.target.value)} placeholder="hrs" step="0.25" />
+            <input type="number" value={row.calories} onChange={e => updateExercise(idx, 'calories', e.target.value)} placeholder="cal" />
+            <button onClick={() => removeExercise(idx)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: 16, padding: 0, lineHeight: 1 }}>✕</button>
+          </div>
+        ))}
+        <button onClick={addExercise} style={{ background: 'none', border: '1px dashed var(--border)', borderRadius: 'var(--radius-sm)', width: '100%', padding: '7px', fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>+ add exercise</button>
+        <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8 }}>Calories auto-calculate from your profile weight — override anytime.</p>
+      </Card>
 
+      {/* Weight */}
+      <Card style={{ marginBottom: 16 }}>
+        <SectionLabel>Weight (optional)</SectionLabel>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px', gap: 8 }}>
+          <div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Today's weight</div>
+            <input type="number" value={dayData.weight} onChange={e => setDayData({ ...dayData, weight: e.target.value })} placeholder="e.g. 204.5" style={{ width: '100%' }} />
+          </div>
+          <div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Unit</div>
+            <select value={dayData.weightUnit} onChange={e => setDayData({ ...dayData, weightUnit: e.target.value })} style={{ width: '100%' }}>
+              <option>lbs</option>
+              <option>kg</option>
+            </select>
+          </div>
+        </div>
+      </Card>
+
+      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+        <Btn variant="outline" onClick={() => setDayData(emptyDay())}>Clear</Btn>
+        <Btn onClick={handleSave} disabled={saving}>{saving ? 'Saving...' : 'Save day'}</Btn>
+      </div>
+    </div>
+  )
+}
 // ── Trends Tab ────────────────────────────────────────────────────────────────
 function TrendsTab({ profile }) {
   const [range, setRange] = useState(30)
