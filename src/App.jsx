@@ -338,6 +338,8 @@ function TrendsTab({ profile }) {
   })()
   const avgDeficit = daysLogged > 0 ? Math.round(tdee - avgCal) : 0
 
+  const avgWeightVal = avgWeight === '—' ? null : parseFloat(avgWeight)
+
   const calChartData = {
     labels,
     datasets: [
@@ -349,6 +351,17 @@ function TrendsTab({ profile }) {
         fill: true,
         tension: 0.3,
         pointRadius: range > 90 ? 0 : 3,
+        yAxisID: 'y',
+        spanGaps: true,
+      },
+      {
+        label: `Avg calories (${avgCal.toLocaleString()})`,
+        data: labels.map(() => avgCal || null),
+        borderColor: '#2D6A4F',
+        borderDash: [4, 3],
+        backgroundColor: 'transparent',
+        tension: 0,
+        pointRadius: 0,
         yAxisID: 'y',
         spanGaps: true,
       },
@@ -371,6 +384,17 @@ function TrendsTab({ profile }) {
         backgroundColor: 'transparent',
         tension: 0.3,
         pointRadius: range > 90 ? 0 : 3,
+        yAxisID: 'y2',
+        spanGaps: true,
+      },
+      {
+        label: `Avg weight (${avgWeight} lbs)`,
+        data: labels.map(() => avgWeightVal),
+        borderColor: '#185FA5',
+        borderDash: [4, 3],
+        backgroundColor: 'transparent',
+        tension: 0,
+        pointRadius: 0,
         yAxisID: 'y2',
         spanGaps: true,
       },
