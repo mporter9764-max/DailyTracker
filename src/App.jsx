@@ -377,7 +377,7 @@ function TrendsTab({ profile }) {
     ],
   }
 
-  const sleepChartData = {
+const sleepChartData = {
     labels,
     datasets: [
       {
@@ -388,6 +388,16 @@ function TrendsTab({ profile }) {
         fill: true,
         tension: 0.3,
         pointRadius: range > 90 ? 0 : 3,
+        spanGaps: true,
+      },
+      {
+        label: `Avg (${avgSleep} hrs)`,
+        data: labels.map(() => avgSleep === '—' ? null : parseFloat(avgSleep)),
+        borderColor: '#B7610A',
+        borderDash: [4, 3],
+        backgroundColor: 'transparent',
+        tension: 0,
+        pointRadius: 0,
         spanGaps: true,
       },
     ],
