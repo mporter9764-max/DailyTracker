@@ -447,12 +447,30 @@ function TrendsTab({ profile }) {
           </Card>
 
           <Card style={{ marginBottom: 12 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Sleep</div>
+            {logs.length === 0 ? (
+              <p style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center', padding: '40px 0' }}>No data logged yet.</p>
+            ) : (
+              <Line data={sleepChartData} options={sleepChartOptions} />
+            )}
+          </Card>
 
-</>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 10 }}>
+            <StatCard value={avgCal.toLocaleString()} label="avg daily calories" />
+            <StatCard value={tdee.toLocaleString()} label="profile TDEE" color="var(--amber)" />
+            <StatCard value={avgWeight} label="avg weight (lbs)" />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+            <StatCard value={avgDeficit > 0 ? `−${avgDeficit.toLocaleString()}` : `+${Math.abs(avgDeficit).toLocaleString()}`} label="avg daily vs TDEE" color={avgDeficit > 0 ? 'var(--accent)' : 'var(--red)'} />
+            <StatCard value={avgSleep} label="avg sleep (hrs)" color="#6B4FA0" />
+            <StatCard value={daysLogged} label="days logged" />
+          </div>
+        </>
       )}
     </div>
   )
 }
+
 
 
             
