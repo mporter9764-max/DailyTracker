@@ -294,6 +294,7 @@ function LogTab({ profile, onSaveDay }) {
   )
 }
 // ── Trends Tab ────────────────────────────────────────────────────────────────
+// ── Trends Tab ────────────────────────────────────────────────────────────────
 function TrendsTab({ profile }) {
   const [range, setRange] = useState(30)
   const [logs, setLogs] = useState([])
@@ -319,6 +320,11 @@ function TrendsTab({ profile }) {
   const calData = logs.map(l => l.data?.totals?.eaten || null)
   const weightData = logs.map(l => l.data?.weight ? parseFloat(l.data.weight) : null)
   const tdeeData = logs.map(l => l.data?.snapshot?.tdee || tdee)
+  const sleepData = logs.map(l => {
+    const blocks = l.data?.activityBlocks || l.data?.snapshot?.activityBlocks || []
+    const sleepBlock = blocks.find(b => b.activity === 'Sleeping')
+    return sleepBlock ? parseFloat(sleepBlock.hours) : null
+  })
 
   const daysLogged = logs.filter(l => l.data?.totals?.eaten).length
   const avgCal = daysLogged > 0 ? Math.round(calData.filter(Boolean).reduce((a, b) => a + b, 0) / daysLogged) : 0
@@ -326,9 +332,13 @@ function TrendsTab({ profile }) {
     const w = weightData.filter(Boolean)
     return w.length > 0 ? (w.reduce((a, b) => a + b, 0) / w.length).toFixed(1) : '—'
   })()
+  const avgSleep = (() => {
+    const s = sleepData.filter(Boolean)
+    return s.length > 0 ? (s.reduce((a, b) => a + b, 0) / s.length).toFixed(1) : '—'
+  })()
   const avgDeficit = daysLogged > 0 ? Math.round(tdee - avgCal) : 0
 
-  const chartData = {
+  const calChartData = {
     labels,
     datasets: [
       {
@@ -367,16 +377,45 @@ function TrendsTab({ profile }) {
     ],
   }
 
-  const chartOptions = {
+  const sleepChartData = {
+    labels,
+    datasets: [
+      {
+        label: 'Sleep (hrs)',
+        data: sleepData,
+        borderColor: '#6B4FA0',
+        backgroundColor: 'rgba(107,79,160,0.08)',
+        fill: true,
+        tension: 0.3,
+        pointRadius: range > 90 ? 0 : 3,
+        spanGaps: true,
+      },
+    ],
+  }
+
+  const calChartOptions = {
     responsive: true,
     interaction: { mode: 'index', intersect: false },
-    plugins: {
-      legend: { labels: { font: { size: 11 }, boxWidth: 20, padding: 12 } },
-    },
+    plugins: { legend: { labels: { font: { size: 11 }, boxWidth: 20, padding: 12 } } },
     scales: {
       x: { ticks: { font: { size: 10 }, maxTicksLimit: 10 }, grid: { color: 'rgba(0,0,0,0.04)' } },
       y: { position: 'left', ticks: { font: { size: 10 } }, grid: { color: 'rgba(0,0,0,0.04)' }, title: { display: true, text: 'Calories', font: { size: 10 } } },
-      y2: { position: 'right', ticks: { font: { size: 10 } }, grid: { drawOnChartArea: false }, title: { display: true, text: 'Weight', font: { size: 10 } } },
+      y2: { position: 'right', ticks: { font: { size: 10 } }, grid: { drawOnChartArea: false }, title: { display: true, text: 'Weight (lbs)', font: { size: 10 } } },
+    },
+  }
+
+  const sleepChartOptions = {
+    responsive: true,
+    interaction: { mode: 'index', intersect: false },
+    plugins: { legend: { labels: { font: { size: 11 }, boxWidth: 20, padding: 12 } } },
+    scales: {
+      x: { ticks: { font: { size: 10 }, maxTicksLimit: 10 }, grid: { color: 'rgba(0,0,0,0.04)' } },
+      y: {
+        ticks: { font: { size: 10 } },
+        grid: { color: 'rgba(0,0,0,0.04)' },
+        title: { display: true, text: 'Hours', font: { size: 10 } },
+        min: 0, max: 12,
+      },
     },
   }
 
@@ -399,28 +438,15 @@ function TrendsTab({ profile }) {
       {loading ? <Spinner /> : (
         <>
           <Card style={{ marginBottom: 12 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Calories & Weight</div>
             {logs.length === 0 ? (
               <p style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center', padding: '40px 0' }}>No data logged yet. Start tracking to see your trends.</p>
             ) : (
-              <Line data={chartData} options={chartOptions} />
+              <Line data={calChartData} options={calChartOptions} />
             )}
           </Card>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 10 }}>
-            <StatCard value={avgCal.toLocaleString()} label="avg daily calories" />
-            <StatCard value={tdee.toLocaleString()} label="your TDEE" color="var(--amber)" />
-            <StatCard value={avgWeight} label="avg weight (lbs)" />
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            <StatCard value={avgDeficit > 0 ? `−${avgDeficit.toLocaleString()}` : `+${Math.abs(avgDeficit).toLocaleString()}`} label="avg daily vs TDEE" color={avgDeficit > 0 ? 'var(--accent)' : 'var(--red)'} />
-            <StatCard value={daysLogged} label="days logged" />
-          </div>
-        </>
-      )}
-    </div>
-  )
-}
-
+          <Card style={{ marginBottom: 12 }}>
 // ── Profile Tab ───────────────────────────────────────────────────────────────
 function ProfileTab({ profile, onSaveProfile }) {
   const [form, setForm] = useState(profile)
