@@ -41,7 +41,7 @@ export function calcExerciseCalories(activityLabel, durationHours, weightLbs) {
   const adjMet = activity.met * LBM_MET_ADJ
   return Math.round(adjMet * 1.05 * weightKg * durationHours)
 }
-}
+
 
 // ── TDEE from daily activity profile ─────────────────────────────────────────
 // activityBlocks: [{ activity: label, hours: number }, ...]
