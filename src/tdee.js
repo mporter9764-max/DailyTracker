@@ -34,12 +34,13 @@ export function calcBMR(weightLbs, bodyFatPct) {
 // ── Calories burned per exercise session ─────────────────────────────────────
 // Formula: Adj MET × 1.05 × weight(kg) × (duration_minutes / 60)
 // where Adj MET = base MET × LBM_MET_ADJ (0.7)
-export function calcExerciseCalories(activityLabel, durationMinutes, weightLbs) {
+export function calcExerciseCalories(activityLabel, durationHours, weightLbs) {
   const activity = ACTIVITIES.find(a => a.label === activityLabel)
   if (!activity) return 0
   const weightKg = weightLbs * 0.453592
   const adjMet = activity.met * LBM_MET_ADJ
-  return Math.round(adjMet * 1.05 * weightKg * (durationMinutes / 60))
+  return Math.round(adjMet * 1.05 * weightKg * durationHours)
+}
 }
 
 // ── TDEE from daily activity profile ─────────────────────────────────────────
