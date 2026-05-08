@@ -217,7 +217,7 @@ function LogTab({ profile, onSaveDay }) {
         <SectionLabel>Exercise & calories burned</SectionLabel>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 90px 28px', gap: 6, marginBottom: 6 }}>
           <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Activity</div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Min</div>
+         <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Hours</div>
           <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Cal burned</div>
           <div />
         </div>
@@ -226,7 +226,7 @@ function LogTab({ profile, onSaveDay }) {
             <select value={row.activity} onChange={e => updateExercise(idx, 'activity', e.target.value)}>
               {ACTIVITIES.map(a => <option key={a.label} value={a.label}>{a.label}</option>)}
             </select>
-            <input type="number" value={row.duration} onChange={e => updateExercise(idx, 'duration', e.target.value)} placeholder="min" />
+          <input type="number" value={row.duration} onChange={e => updateExercise(idx, 'duration', e.target.value)} placeholder="hrs" step="0.25" />
             <input type="number" value={row.calories} onChange={e => updateExercise(idx, 'calories', e.target.value)} placeholder="cal" />
             <button onClick={() => removeExercise(idx)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: 16, padding: 0, lineHeight: 1 }}>✕</button>
           </div>
