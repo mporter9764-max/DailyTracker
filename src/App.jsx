@@ -78,6 +78,7 @@ function Spinner() {
 }
 
 // ── Log Tab ───────────────────────────────────────────────────────────────────
+// ── Log Tab ───────────────────────────────────────────────────────────────────
 function LogTab({ profile, onSaveDay }) {
   const [currentDate, setCurrentDate] = useState(todayStr())
   const [dayData, setDayData] = useState(null)
@@ -91,9 +92,10 @@ function LogTab({ profile, onSaveDay }) {
       { item: '', calories: '' },
     ],
     exercise: [{ activity: 'Jogging (5mph)', duration: '', calories: '' }],
+    activityBlocks: profile.activityBlocks || DEFAULT_PROFILE.activityBlocks,
     weight: '',
     weightUnit: 'lbs',
-  }), [])
+  }), [profile])
 
   const loadDay = useCallback(async (date) => {
     setLoading(true)
@@ -127,7 +129,6 @@ function LogTab({ profile, onSaveDay }) {
   const updateExercise = (idx, field, val) => {
     const exercise = [...dayData.exercise]
     exercise[idx] = { ...exercise[idx], [field]: val }
-    // Auto-calc calories if activity or duration changes
     if (field === 'activity' || field === 'duration') {
       const row = { ...exercise[idx], [field]: val }
       const dur = parseFloat(row.duration) || 0
@@ -144,14 +145,29 @@ function LogTab({ profile, onSaveDay }) {
   const addExercise = () => setDayData({ ...dayData, exercise: [...dayData.exercise, { activity: 'Jogging (5mph)', duration: '', calories: '' }] })
   const removeExercise = (idx) => setDayData({ ...dayData, exercise: dayData.exercise.filter((_, i) => i !== idx) })
 
+  const updateActivityBlock = (idx, field, val) => {
+    const blocks = [...(dayData.activityBlocks || [])]
+    blocks[idx] = { ...blocks[idx], [field]: field === 'hours' ? parseFloat(val) || 0 : val }
+    setDayData({ ...dayData, activityBlocks: blocks })
+  }
+  const addActivityBlock = () => setDayData({ ...dayData, activityBlocks: [...(dayData.activityBlocks || []), { activity: 'Standing', hours: 1 }] })
+  const removeActivityBlock = (idx) => setDayData({ ...dayData, activityBlocks: (dayData.activityBlocks || []).filter((_, i) => i !== idx) })
+  const resetActivityBlocks = () => setDayData({ ...dayData, activityBlocks: profile.activityBlocks || DEFAULT_PROFILE.activityBlocks })
+
   const totalEaten = dayData?.food.reduce((s, f) => s + (parseFloat(f.calories) || 0), 0) || 0
   const totalBurned = dayData?.exercise.reduce((s, e) => s + (parseFloat(e.calories) || 0), 0) || 0
   const netCals = totalEaten - totalBurned
+  const dayTDEE = calcTDEE(
+    profile.weightLbs || DEFAULT_PROFILE.weightLbs,
+    profile.bodyFatPct || DEFAULT_PROFILE.bodyFatPct,
+    dayData?.activityBlocks || DEFAULT_PROFILE.activityBlocks
+  )
+  const deficit = dayTDEE - Math.round(netCals)
+  const totalActivityHours = (dayData?.activityBlocks || []).reduce((s, b) => s + (parseFloat(b.hours) || 0), 0)
 
   const handleSave = async () => {
     setSaving(true)
     const bmr = Math.round(calcBMR(profile.weightLbs || DEFAULT_PROFILE.weightLbs, profile.bodyFatPct || DEFAULT_PROFILE.bodyFatPct))
-    const tdee = calcTDEE(profile.weightLbs || DEFAULT_PROFILE.weightLbs, profile.bodyFatPct || DEFAULT_PROFILE.bodyFatPct, profile.activityBlocks || DEFAULT_PROFILE.activityBlocks)
 
     const record = {
       date: currentDate,
@@ -162,9 +178,10 @@ function LogTab({ profile, onSaveDay }) {
           bodyFatPct: profile.bodyFatPct,
           age: profile.age,
           bmr,
-          tdee,
+          tdee: dayTDEE,
+          activityBlocks: dayData.activityBlocks,
         },
-        totals: { eaten: Math.round(totalEaten), burned: Math.round(totalBurned), net: Math.round(netCals) },
+        totals: { eaten: Math.round(totalEaten), burned: Math.round(totalBurned), net: Math.round(netCals), tdee: dayTDEE, deficit },
       },
     }
 
@@ -187,12 +204,47 @@ function LogTab({ profile, onSaveDay }) {
         <button onClick={() => navigate(1)} disabled={isToday(currentDate)} style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', padding: '5px 12px', fontSize: 13, color: isToday(currentDate) ? 'var(--text-muted)' : 'var(--text-primary)' }}>Next →</button>
       </div>
 
-      {/* Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 16 }}>
+      {/* Stats — 5 cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 8 }}>
         <StatCard value={Math.round(totalEaten).toLocaleString()} label="calories eaten" />
         <StatCard value={Math.round(totalBurned).toLocaleString()} label="calories burned" color="var(--accent)" />
         <StatCard value={Math.round(netCals).toLocaleString()} label="net calories" />
       </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+        <StatCard value={dayTDEE.toLocaleString()} label="today's TDEE" color="var(--amber)" />
+        <StatCard
+          value={deficit > 0 ? `−${deficit.toLocaleString()}` : `+${Math.abs(deficit).toLocaleString()}`}
+          label={deficit > 0 ? 'deficit vs TDEE' : 'surplus vs TDEE'}
+          color={deficit > 0 ? 'var(--accent)' : 'var(--red)'}
+        />
+      </div>
+
+      {/* Daily activity blocks */}
+      <Card style={{ marginBottom: 12 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <SectionLabel>Today's activity profile</SectionLabel>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <span style={{ fontSize: 11, color: totalActivityHours === 24 ? 'var(--accent)' : 'var(--red)', fontWeight: 700 }}>{totalActivityHours} / 24 hrs</span>
+            <button onClick={resetActivityBlocks} style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', fontSize: 11, padding: '3px 10px', cursor: 'pointer', color: 'var(--text-secondary)' }}>Reset to defaults</button>
+          </div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 28px', gap: 6, marginBottom: 6 }}>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Activity</div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Hours</div>
+          <div />
+        </div>
+        {(dayData.activityBlocks || []).map((block, idx) => (
+          <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr 80px 28px', gap: 6, marginBottom: 6 }}>
+            <select value={block.activity} onChange={e => updateActivityBlock(idx, 'activity', e.target.value)} style={{ width: '100%' }}>
+              {ACTIVITIES.map(a => <option key={a.label} value={a.label}>{a.label}</option>)}
+            </select>
+            <input type="number" value={block.hours} onChange={e => updateActivityBlock(idx, 'hours', e.target.value)} step="0.5" style={{ width: '100%' }} />
+            <button onClick={() => removeActivityBlock(idx)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: 16, padding: 0, lineHeight: 1 }}>✕</button>
+          </div>
+        ))}
+        <button onClick={addActivityBlock} style={{ background: 'none', border: '1px dashed var(--border)', borderRadius: 'var(--radius-sm)', width: '100%', padding: '7px', fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>+ add activity block</button>
+        <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8 }}>TDEE updates live as you adjust. Pre-populated from your profile defaults.</p>
+      </Card>
 
       {/* Food log */}
       <Card style={{ marginBottom: 12 }}>
@@ -213,53 +265,7 @@ function LogTab({ profile, onSaveDay }) {
       </Card>
 
       {/* Exercise */}
-      <Card style={{ marginBottom: 12 }}>
-        <SectionLabel>Exercise & calories burned</SectionLabel>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 90px 28px', gap: 6, marginBottom: 6 }}>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Activity</div>
-         <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Hours</div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Cal burned</div>
-          <div />
-        </div>
-        {dayData.exercise.map((row, idx) => (
-          <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr 80px 90px 28px', gap: 6, marginBottom: 6 }}>
-            <select value={row.activity} onChange={e => updateExercise(idx, 'activity', e.target.value)}>
-              {ACTIVITIES.map(a => <option key={a.label} value={a.label}>{a.label}</option>)}
-            </select>
-          <input type="number" value={row.duration} onChange={e => updateExercise(idx, 'duration', e.target.value)} placeholder="hrs" step="0.25" />
-            <input type="number" value={row.calories} onChange={e => updateExercise(idx, 'calories', e.target.value)} placeholder="cal" />
-            <button onClick={() => removeExercise(idx)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: 16, padding: 0, lineHeight: 1 }}>✕</button>
-          </div>
-        ))}
-        <button onClick={addExercise} style={{ background: 'none', border: '1px dashed var(--border)', borderRadius: 'var(--radius-sm)', width: '100%', padding: '7px', fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>+ add exercise</button>
-        <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8 }}>Calories auto-calculate from your profile weight — override anytime.</p>
-      </Card>
-
-      {/* Weight */}
-      <Card style={{ marginBottom: 16 }}>
-        <SectionLabel>Weight (optional)</SectionLabel>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px', gap: 8 }}>
-          <div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Today's weight</div>
-            <input type="number" value={dayData.weight} onChange={e => setDayData({ ...dayData, weight: e.target.value })} placeholder="e.g. 204.5" style={{ width: '100%' }} />
-          </div>
-          <div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Unit</div>
-            <select value={dayData.weightUnit} onChange={e => setDayData({ ...dayData, weightUnit: e.target.value })} style={{ width: '100%' }}>
-              <option>lbs</option>
-              <option>kg</option>
-            </select>
-          </div>
-        </div>
-      </Card>
-
-      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-        <Btn variant="outline" onClick={() => setDayData(emptyDay())}>Clear</Btn>
-        <Btn onClick={handleSave} disabled={saving}>{saving ? 'Saving...' : 'Save day'}</Btn>
-      </div>
-    </div>
-  )
-}
+      <Card style={{ ma
 
 // ── Trends Tab ────────────────────────────────────────────────────────────────
 function TrendsTab({ profile }) {
