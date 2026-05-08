@@ -220,6 +220,24 @@ function LogTab({ profile, onSaveDay }) {
         />
       </div>
 
+     {/* Food log */}
+      <Card style={{ marginBottom: 12 }}>
+        <SectionLabel>Food log</SectionLabel>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 90px 28px', gap: 6, marginBottom: 6 }}>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Item</div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Calories</div>
+          <div />
+        </div>
+        {dayData.food.map((row, idx) => (
+          <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr 90px 28px', gap: 6, marginBottom: 6 }}>
+            <input value={row.item} onChange={e => updateFood(idx, 'item', e.target.value)} placeholder="What did you eat?" />
+            <input type="number" value={row.calories} onChange={e => updateFood(idx, 'calories', e.target.value)} placeholder="cal" />
+            <button onClick={() => removeFood(idx)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: 16, padding: 0, lineHeight: 1 }}>✕</button>
+          </div>
+        ))}
+        <button onClick={addFood} style={{ background: 'none', border: '1px dashed var(--border)', borderRadius: 'var(--radius-sm)', width: '100%', padding: '7px', fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>+ add item</button>
+      </Card>
+
       {/* Daily activity blocks */}
       <Card style={{ marginBottom: 12 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
@@ -247,23 +265,7 @@ function LogTab({ profile, onSaveDay }) {
         <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8 }}>TDEE updates live as you adjust. Pre-populated from your profile defaults.</p>
       </Card>
 
-      {/* Food log */}
-      <Card style={{ marginBottom: 12 }}>
-        <SectionLabel>Food log</SectionLabel>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 90px 28px', gap: 6, marginBottom: 6 }}>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Item</div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Calories</div>
-          <div />
-        </div>
-        {dayData.food.map((row, idx) => (
-          <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr 90px 28px', gap: 6, marginBottom: 6 }}>
-            <input value={row.item} onChange={e => updateFood(idx, 'item', e.target.value)} placeholder="What did you eat?" />
-            <input type="number" value={row.calories} onChange={e => updateFood(idx, 'calories', e.target.value)} placeholder="cal" />
-            <button onClick={() => removeFood(idx)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: 16, padding: 0, lineHeight: 1 }}>✕</button>
-          </div>
-        ))}
-        <button onClick={addFood} style={{ background: 'none', border: '1px dashed var(--border)', borderRadius: 'var(--radius-sm)', width: '100%', padding: '7px', fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>+ add item</button>
-      </Card>
+{/* Exercise */}
 
       {/* Exercise */}
       <Card style={{ marginBottom: 12 }}>
