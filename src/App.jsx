@@ -447,6 +447,15 @@ function TrendsTab({ profile }) {
           </Card>
 
           <Card style={{ marginBottom: 12 }}>
+
+</>
+      )}
+    </div>
+  )
+}
+
+
+            
 // ── Profile Tab ───────────────────────────────────────────────────────────────
 function ProfileTab({ profile, onSaveProfile }) {
   const [form, setForm] = useState(profile)
