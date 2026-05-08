@@ -211,7 +211,8 @@ function LogTab({ profile, onSaveDay }) {
         <StatCard value={Math.round(totalBurned).toLocaleString()} label="calories burned" color="var(--accent)" />
         <StatCard value={Math.round(netCals).toLocaleString()} label="net calories" />
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 16 }}>
+        <StatCard value={Math.round(totalEaten).toLocaleString()} label="calories eaten" />
         <StatCard value={dayTDEE.toLocaleString()} label="today's TDEE" color="var(--amber)" />
         <StatCard
           value={deficit > 0 ? `−${deficit.toLocaleString()}` : `+${Math.abs(deficit).toLocaleString()}`}
@@ -266,29 +267,6 @@ function LogTab({ profile, onSaveDay }) {
       </Card>
 
 {/* Exercise */}
-
-      {/* Exercise */}
-      <Card style={{ marginBottom: 12 }}>
-        <SectionLabel>Exercise & calories burned</SectionLabel>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 90px 28px', gap: 6, marginBottom: 6 }}>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Activity</div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Hours</div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Cal burned</div>
-          <div />
-        </div>
-        {dayData.exercise.map((row, idx) => (
-          <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr 80px 90px 28px', gap: 6, marginBottom: 6 }}>
-            <select value={row.activity} onChange={e => updateExercise(idx, 'activity', e.target.value)}>
-              {ACTIVITIES.map(a => <option key={a.label} value={a.label}>{a.label}</option>)}
-            </select>
-            <input type="number" value={row.duration} onChange={e => updateExercise(idx, 'duration', e.target.value)} placeholder="hrs" step="0.25" />
-            <input type="number" value={row.calories} onChange={e => updateExercise(idx, 'calories', e.target.value)} placeholder="cal" />
-            <button onClick={() => removeExercise(idx)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: 16, padding: 0, lineHeight: 1 }}>✕</button>
-          </div>
-        ))}
-        <button onClick={addExercise} style={{ background: 'none', border: '1px dashed var(--border)', borderRadius: 'var(--radius-sm)', width: '100%', padding: '7px', fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>+ add exercise</button>
-        <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8 }}>Calories auto-calculate from your profile weight — override anytime.</p>
-      </Card>
 
       {/* Weight */}
       <Card style={{ marginBottom: 16 }}>
